@@ -87,6 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
     calculatePricing();
 
     // --- Export functionality (html2canvas) ---
+    const saveBtnDefaultHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        บันทึกเป็นรูปภาพ (Save as Image)
+    `;
+
+    const restoreButton = () => {
+        btnSaveImage.disabled = false;
+        btnSaveImage.innerHTML = saveBtnDefaultHTML;
+    };
+
     btnSaveImage.addEventListener('click', () => {
         btnSaveImage.disabled = true;
         btnSaveImage.innerHTML = `
@@ -94,65 +104,77 @@ document.addEventListener('DOMContentLoaded', () => {
             กำลังบันทึก...
         `;
 
-        // Wait a frame so UI updates
+        let pName = productName.value.trim() || 'Pricing_Summary';
+        pName = pName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+        // Wait a frame for button UI to update
         setTimeout(() => {
-            // Temporarily adjust styles for perfect export
-            const originalBoxShadow = exportSection.style.boxShadow;
-            const originalTransform = exportSection.style.transform;
-            const originalMargin = exportSection.style.margin;
-            const originalBackground = exportSection.style.background;
-            
-            exportSection.style.boxShadow = 'none';
-            exportSection.style.transform = 'none';
-            exportSection.style.margin = '0'; // prevent weird offsets
-            
-            // Fix html2canvas bug crashing on linear-gradient with CSS vars
-            exportSection.style.background = '#1e293b'; 
-
-            let pName = productName.value.trim() || 'Pricing_Summary';
-            pName = pName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-
             html2canvas(exportSection, {
-                scale: 2, // Higher resolution
+                scale: 2,
                 backgroundColor: '#0f172a',
                 logging: false,
-                useCORS: true
-            }).then(canvas => {
-                // Restore styles
-                exportSection.style.boxShadow = originalBoxShadow;
-                exportSection.style.transform = originalTransform;
-                exportSection.style.margin = originalMargin;
-                exportSection.style.background = originalBackground;
+                useCORS: true,
+                // Key fix: sanitize the cloned DOM before html2canvas parses CSS
+                onclone: (clonedDoc, clonedElement) => {
+                    // 1. Inject CSS overrides that replace all oklch / linear-gradient / CSS vars
+                    //    with simple hex colors html2canvas can understand
+                    const fixStyle = clonedDoc.createElement('style');
+                    fixStyle.textContent = `
+                        /* Force color-scheme to prevent browser oklch injection */
+                        :root, html, body, *, *::before, *::after {
+                            color-scheme: normal !important;
+                            forced-color-adjust: none !important;
+                        }
+                        /* Re-declare all CSS variables as explicit hex */
+                        :root {
+                            --bg-dark: #0f172a !important;
+                            --bg-card: #1e293b !important;
+                            --bg-input: #0f172a !important;
+                            --text-main: #f8fafc !important;
+                            --text-muted: #94a3b8 !important;
+                            --accent-primary: #3b82f6 !important;
+                            --accent-hover: #2563eb !important;
+                            --color-orange: #f97316 !important;
+                            --color-green: #22c55e !important;
+                            --color-yellow: #eab308 !important;
+                            --border-color: #334155 !important;
+                            --border-highlight: #3b82f6 !important;
+                        }
+                        /* Replace all gradients with solid fallback colors */
+                        .summary-card {
+                            background: #1a2744 !important;
+                        }
+                        .summary-card .card-header {
+                            background-color: rgba(59, 130, 246, 0.1) !important;
+                            background: rgba(59, 130, 246, 0.1) !important;
+                        }
+                        .grand-total {
+                            background: #172033 !important;
+                        }
+                        .app-header {
+                            background: #1e293b !important;
+                        }
+                    `;
+                    clonedDoc.head.appendChild(fixStyle);
 
-                // Generate Image Link
+                    // 2. Force inline styles on the cloned element tree
+                    //    to override any remaining computed oklch values
+                    clonedElement.style.background = '#1a2744';
+                    clonedElement.style.boxShadow = 'none';
+                    clonedElement.style.transform = 'none';
+                }
+            }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `${pName}_calculator.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                
-                // Restore Button
-                btnSaveImage.disabled = false;
-                btnSaveImage.innerHTML = `
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    บันทึกเป็นรูปภาพ (Save as Image)
-                `;
+                restoreButton();
             }).catch(err => {
                 console.error('Error generating image:', err);
-                alert('เกิดข้อผิดพลาด: ' + err.message + ' (ลองใหม่อีกครั้ง)');
-                
-                // Restore styles on error
-                exportSection.style.boxShadow = originalBoxShadow;
-                exportSection.style.transform = originalTransform;
-                exportSection.style.margin = originalMargin;
-                exportSection.style.background = originalBackground;
-
-                btnSaveImage.disabled = false;
-                btnSaveImage.innerHTML = `
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    บันทึกเป็นรูปภาพ (Save as Image)
-                `;
+                alert('เกิดข้อผิดพลาด: ' + err.message);
+                restoreButton();
             });
-        }, 100);
+        }, 150);
     });
 
     // Simple animation styles injection for spinner
