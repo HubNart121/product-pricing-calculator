@@ -94,63 +94,59 @@ document.addEventListener('DOMContentLoaded', () => {
             กำลังบันทึก...
         `;
 
-        // Temporarily adjust styles for perfect export
-        const originalBoxShadow = exportSection.style.boxShadow;
-        const originalTransform = exportSection.style.transform;
-        
-        // Remove hover effects during capture
-        exportSection.style.boxShadow = 'none';
-        exportSection.style.transform = 'none';
-        
-        // Ensure white/dark background explicitly behind the card
-        const exportWrapper = document.createElement('div');
-        exportWrapper.style.padding = '20px';
-        exportWrapper.style.backgroundColor = '#0f172a'; // match body background
-        
-        exportSection.parentNode.insertBefore(exportWrapper, exportSection);
-        exportWrapper.appendChild(exportSection);
-
-        let pName = productName.value.trim() || 'Pricing_Summary';
-        pName = pName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-
-        html2canvas(exportWrapper, {
-            scale: 2, // Higher resolution
-            backgroundColor: '#0f172a',
-            logging: false,
-            useCORS: true
-        }).then(canvas => {
-            // Restore DOM structure
-            exportWrapper.parentNode.insertBefore(exportSection, exportWrapper);
-            exportWrapper.remove();
+        // Wait a frame so UI updates
+        setTimeout(() => {
+            // Temporarily adjust styles for perfect export
+            const originalBoxShadow = exportSection.style.boxShadow;
+            const originalTransform = exportSection.style.transform;
+            const originalMargin = exportSection.style.margin;
             
-            exportSection.style.boxShadow = originalBoxShadow;
-            exportSection.style.transform = originalTransform;
+            exportSection.style.boxShadow = 'none';
+            exportSection.style.transform = 'none';
+            exportSection.style.margin = '0'; // prevent weird offsets
 
-            // Generate Image Link
-            const link = document.createElement('a');
-            link.download = `${pName}_calculator.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            // Restore Button
-            setTimeout(() => {
+            let pName = productName.value.trim() || 'Pricing_Summary';
+            pName = pName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+            html2canvas(exportSection, {
+                scale: 2, // Higher resolution
+                backgroundColor: '#0f172a',
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                // Restore styles
+                exportSection.style.boxShadow = originalBoxShadow;
+                exportSection.style.transform = originalTransform;
+                exportSection.style.margin = originalMargin;
+
+                // Generate Image Link
+                const link = document.createElement('a');
+                link.download = `${pName}_calculator.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                // Restore Button
                 btnSaveImage.disabled = false;
                 btnSaveImage.innerHTML = `
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                     บันทึกเป็นรูปภาพ (Save as Image)
                 `;
-            }, 500);
-        }).catch(err => {
-            console.error('Error generating image:', err);
-            alert('ไม่สามารถบันทึกภาพได้ ลองใหม่อีกครั้ง');
-            
-            // Restore DOM structure on error
-            if(exportWrapper.parentNode) {
-                exportWrapper.parentNode.insertBefore(exportSection, exportWrapper);
-                exportWrapper.remove();
-            }
-            btnSaveImage.disabled = false;
-        });
+            }).catch(err => {
+                console.error('Error generating image:', err);
+                alert('ไม่สามารถบันทึกภาพได้ ลองใหม่อีกครั้ง');
+                
+                // Restore styles on error
+                exportSection.style.boxShadow = originalBoxShadow;
+                exportSection.style.transform = originalTransform;
+                exportSection.style.margin = originalMargin;
+
+                btnSaveImage.disabled = false;
+                btnSaveImage.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    บันทึกเป็นรูปภาพ (Save as Image)
+                `;
+            });
+        }, 100);
     });
 
     // Simple animation styles injection for spinner
