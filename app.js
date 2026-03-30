@@ -100,10 +100,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const originalBoxShadow = exportSection.style.boxShadow;
             const originalTransform = exportSection.style.transform;
             const originalMargin = exportSection.style.margin;
+            const originalBackground = exportSection.style.background;
             
             exportSection.style.boxShadow = 'none';
             exportSection.style.transform = 'none';
             exportSection.style.margin = '0'; // prevent weird offsets
+            
+            // Fix html2canvas bug crashing on linear-gradient with CSS vars
+            exportSection.style.background = '#1e293b'; 
 
             let pName = productName.value.trim() || 'Pricing_Summary';
             pName = pName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -118,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 exportSection.style.boxShadow = originalBoxShadow;
                 exportSection.style.transform = originalTransform;
                 exportSection.style.margin = originalMargin;
+                exportSection.style.background = originalBackground;
 
                 // Generate Image Link
                 const link = document.createElement('a');
@@ -133,12 +138,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }).catch(err => {
                 console.error('Error generating image:', err);
-                alert('ไม่สามารถบันทึกภาพได้ ลองใหม่อีกครั้ง');
+                alert('เกิดข้อผิดพลาด: ' + err.message + ' (ลองใหม่อีกครั้ง)');
                 
                 // Restore styles on error
                 exportSection.style.boxShadow = originalBoxShadow;
                 exportSection.style.transform = originalTransform;
                 exportSection.style.margin = originalMargin;
+                exportSection.style.background = originalBackground;
 
                 btnSaveImage.disabled = false;
                 btnSaveImage.innerHTML = `
