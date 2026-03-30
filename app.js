@@ -109,7 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Wait a frame for button UI to update
         setTimeout(() => {
-            html2canvas(exportSection, {
+            const appContainer = document.getElementById('calculator-app');
+
+            html2canvas(appContainer, {
                 scale: 2,
                 backgroundColor: '#0f172a',
                 logging: false,
@@ -154,12 +156,36 @@ document.addEventListener('DOMContentLoaded', () => {
                         .app-header {
                             background: #1e293b !important;
                         }
+                        /* Hide action bar & sticky header offset in exported image */
+                        .action-bar {
+                            display: none !important;
+                        }
+                        .app-container {
+                            padding-bottom: 20px !important;
+                        }
+                        .app-header {
+                            position: relative !important;
+                        }
+                        /* Force inputs to show their values clearly */
+                        input, textarea {
+                            color: #f8fafc !important;
+                            background-color: #0f172a !important;
+                            border-color: #334155 !important;
+                        }
+                        .highlight-input input {
+                            color: #eab308 !important;
+                            background-color: rgba(234, 179, 8, 0.05) !important;
+                            border-color: rgba(234, 179, 8, 0.3) !important;
+                        }
+                        .highlight-margin input {
+                            color: #22c55e !important;
+                            background-color: rgba(34, 197, 94, 0.05) !important;
+                            border-color: rgba(34, 197, 94, 0.3) !important;
+                        }
                     `;
                     clonedDoc.head.appendChild(fixStyle);
 
-                    // 2. Force inline styles on the cloned element tree
-                    //    to override any remaining computed oklch values
-                    clonedElement.style.background = '#1a2744';
+                    // 2. Force inline styles on the cloned element
                     clonedElement.style.boxShadow = 'none';
                     clonedElement.style.transform = 'none';
                 }
