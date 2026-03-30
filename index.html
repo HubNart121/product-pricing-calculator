@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Product Pricing Calculator</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="app-container" id="calculator-app">
+        <header class="app-header">
+            <h1>PRICING CALCULATOR</h1>
+            <p>Precision Margin Engine</p>
+        </header>
+
+        <section class="cards-wrapper">
+            
+            <!-- 1. Product Context Card -->
+            <div class="card context-card">
+                <div class="card-header">
+                    <h2>01. ข้อมูลเกี่ยวกับสินค้า (Product Info)</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <label for="product-name">Product Name / Title <span class="sub-label">(หัวข้อสินค้า)</span></label>
+                        <input type="text" id="product-name" placeholder="E.g., Mesh wire-A4.8">
+                    </div>
+                    <div class="input-group">
+                        <label for="product-detail">Detail <span class="sub-label">(รายละเอียดเพิ่มเติม)</span></label>
+                        <textarea id="product-detail" rows="2" placeholder="ระบุรายละเอียด..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Cost Base Card -->
+            <div class="card cost-card">
+                <div class="card-header">
+                    <h2>02. สินค้าต้นทาง (Factory Cost)</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="exw-price">EXW Price</label>
+                            <div class="input-with-unit">
+                                <span class="unit-prefix">¥</span>
+                                <input type="number" id="exw-price" value="200" inputmode="decimal">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="exc-rate">EXC Rate</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="exc-rate" value="5" inputmode="decimal">
+                                <span class="unit-suffix">THB/¥</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group highlight-input">
+                        <label for="quantity">Quantity <span class="sub-label">(จำนวนสินค้า)</span></label>
+                        <div class="input-with-unit">
+                            <input type="number" id="quantity" value="1" inputmode="numeric">
+                            <span class="unit-suffix">PCS</span>
+                        </div>
+                    </div>
+                    
+                    <div class="calculated-row accent">
+                        <span>Product Base Price (THB)</span>
+                        <strong id="display-base-price">฿1,000.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Logistics & Margin Card -->
+            <div class="card logistics-card">
+                <div class="card-header">
+                    <h2>03. การดำเนินการ & กำไร (Logistics & Margin)</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="sea-cost">Overseas Shipping</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="sea-cost" value="40" inputmode="decimal">
+                                <span class="unit-suffix">%</span>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="domestic-cost">Domestic & Packing</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="domestic-cost" value="3" inputmode="decimal">
+                                <span class="unit-suffix">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group highlight-margin">
+                        <label for="gp-margin">GP Margin <span class="sub-label">(เปอร์เซ็นต์กำไรขั้นต้น)</span></label>
+                        <div class="input-with-unit">
+                            <input type="number" id="gp-margin" value="30" inputmode="decimal">
+                            <span class="unit-suffix">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Result/Summary Card -->
+            <div class="card summary-card" id="export-section">
+                <div class="card-header">
+                    <h2>04. สรุปผลลัพธ์ (Answer Summary)</h2>
+                </div>
+                <div class="card-body">
+                    <div class="summary-breakdown">
+                        <div class="breakdown-item">
+                            <span>ยอดรวมค่าขนส่ง (Total Sea Ship):</span>
+                            <span class="val-orange" id="res-sea-ship">฿667</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>ยอดรวมค่าดำเนินการ (Total Domestic):</span>
+                            <span class="val-orange" id="res-domestic">฿52</span>
+                        </div>
+                        <div class="breakdown-item total-cost-row">
+                            <span>ต้นทุนรวมทั้งหมด (Total Cost):</span>
+                            <span class="val-orange bold" id="res-total-cost">฿1,718</span>
+                        </div>
+                    </div>
+
+                    <div class="final-pricing-box">
+                        <div class="pricing-row unit-price">
+                            <span class="label">ราคาขายต่อชิ้น (Price Per Unit)</span>
+                            <span class="value" id="res-unit-price">฿2,455</span>
+                        </div>
+                        <div class="pricing-row grand-total">
+                            <span class="label">GRAND TOTAL PRICE<br><small>ราคาสุทธิทั้งหมด</small></span>
+                            <span class="value hero-text" id="res-grand-total">฿2,455</span>
+                        </div>
+                        <div class="pricing-row profit-row">
+                            <span class="label">TOTAL PROFIT<br><small>กำไรรวมทั้งหมด</small></span>
+                            <span class="value profit-text" id="res-total-profit">฿736</span>
+                        </div>
+                    </div>
+                    <div class="engine-watermark">
+                        PRECISION CALCULATION ENGINE
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <button id="btn-save-image" class="btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                บันทึกเป็นรูปภาพ (Save as Image)
+            </button>
+        </div>
+
+    </main>
+
+    <!-- html2canvas Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Main Script -->
+    <script src="app.js"></script>
+</body>
+</html>
